@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "730429862139",
+    "project_id": "cleanbite-app",
+    "storage_bucket": "cleanbite-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:730429862139:android:a39902c76208868d21405e",
+        "android_client_info": {
+          "package_name": "com.example.cleanbite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDoa7Y1gVqiEZEq2CPtj5WMFkK6G10PCWE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

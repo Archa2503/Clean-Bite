@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ActionBar -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:elevation="4dp"
+        android:theme="?attr/actionBarTheme" />
+
+    <!-- Content Layout -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/toolbar"
+        android:orientation="vertical">
+
+        <!-- From Address -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/fromLabelTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:hint="From:"
+                android:textColor="#000000"
+                android:textStyle="bold" />
+
+            <EditText
+                android:id="@+id/fromEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:paddingStart="16dp"
+                />
+
+        </LinearLayout>
+
+        <!-- To Address -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp">
+
+            <TextView
+                android:id="@+id/toLabelTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="To: "
+                android:textColor="#000000"
+                android:textStyle="bold"
+                android:layout_gravity="center_vertical"/>
+
+
+
+            <EditText
+                android:id="@+id/ToEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="foodsafetykerala@gmail.com"
+                android:textColor="#000000"
+                android:paddingStart="16dp"
+                />
+
+        </LinearLayout>
+
+        <!-- Subject -->
+        <EditText
+            android:id="@+id/subjectEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:hint="Subject"
+            android:padding="16dp"/>
+
+        <!-- Message -->
+        <EditText
+            android:id="@+id/messageEditText"
+            android:layout_width="match_parent"
+            android:layout_height="394dp"
+            android:layout_weight="1"
+            android:gravity="top"
+            android:hint="Compose Email"
+            android:inputType="textMultiLine"
+            android:minLines="5"
+            android:padding="16dp"
+            android:textColor="#000000"
+            android:textStyle="bold" />
+
+        <!-- Attach and Send Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <ImageButton
+                android:id="@+id/attachButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_attach_file_24"
+                android:contentDescription="Attach File"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="8dp"/>
+
+            <ImageButton
+                android:id="@+id/sendButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_send_24"
+                android:layout_marginStart="16dp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
