@@ -1,5 +1,5 @@
 package com.example.cleanbite;
-package com.example.cleanbite;
+
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -34,7 +34,7 @@ public class Dashboard extends AppCompatActivity {
     FloatingActionButton fab;
     DrawerLayout drawerLayout;
     BottomNavigationView bottomNavigationView;
-    public static abstract int nav_home = 1000026;
+    public static int nav_home = 1000026;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -82,14 +82,14 @@ public class Dashboard extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.nav_home:
-                        replaceFragment(new HomeFragment());
-                        break;
-                    case R.id.nav_file_complaint:
-                        startActivity(new Intent(Dashboard.this, FileComplaintActivity.class));
-                        break;
-                }
+//                switch (item.getItemId()) {
+//                    case R.id.nav_home:
+//                        replaceFragment(new HomeFragment());
+//                        break;
+//                    case R.id.nav_file_complaint:
+//                        startActivity(new Intent(Dashboard.this, FileComplaintActivity.class));
+//                        break;
+//                }
                 drawerLayout.closeDrawer(GravityCompat.START);
                 return true;
             }

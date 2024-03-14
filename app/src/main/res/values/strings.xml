@@ -4,4 +4,8 @@
     <string name="close_nav">Close Navigation Drawer</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="client_id">730429862139-f4o7hh8oa5n21tm31ed81bcf08h0kkrr.apps.googleusercontent.com</string>
+
+    <string name="title">My Profile</string>
 </resources>
+

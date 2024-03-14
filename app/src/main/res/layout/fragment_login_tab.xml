@@ -65,6 +65,13 @@
                     android:text="Login"
                     android:textSize="18sp"
                     app:cornerRadius="30dp" />
+                <com.google.android.gms.common.SignInButton
+                    android:id="@+id/google_sign_in_button"
+                    android:layout_width="150dp"
+                    android:layout_height="50dp"
+                    android:layout_gravity="center"
+                    app:cornerRadius="90dp" />
+
 
             </LinearLayout>
 

@@ -33,6 +33,7 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
             }
         }
 
+
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,9 +46,11 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
         analyzeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Handle analyze button click
-                // Start activity or perform action for analyzing ingredients
+                // Start the AnalyzeActivity
+                Intent intent = new Intent(DisplayIngredientsActivity.this, AnalyzeActivity.class);
+                startActivity(intent);
             }
         });
+
     }
 }

@@ -44,12 +44,11 @@ public class EnterIngredientsActivity extends AppCompatActivity {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Pass ingredientsList to the next activity or perform desired action
-                // For example:
-                 Intent intent = new Intent(EnterIngredientsActivity.this, DisplayIngredientsActivity.class);
-                 intent.putExtra("Enteredingredients", ingredientsList.toArray(new String[0]));
-                 startActivity(intent);
+                Intent intent = new Intent(EnterIngredientsActivity.this, DisplayIngredientsActivity.class);
+                intent.putExtra("enteredIngredients", ingredientsList.toArray(new String[0]));
+                startActivity(intent);
             }
         });
+
     }
 }
