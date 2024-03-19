@@ -36,7 +36,7 @@ public class ScanActivity extends AppCompatActivity {
         setContentView(R.layout.activity_scan);
 
         imageView = findViewById(R.id.imageView);
-        textView = findViewById(R.id.textView);
+        textView = findViewById(R.id.textViewpersonal);
 
         findViewById(R.id.captureImageButton).setOnClickListener(v -> launchCameraIntent());
 

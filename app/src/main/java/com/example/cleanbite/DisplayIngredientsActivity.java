@@ -46,8 +46,9 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
         analyzeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Start the AnalyzeActivity
+                // Start the AnalyzeActivity and pass the list of ingredients
                 Intent intent = new Intent(DisplayIngredientsActivity.this, AnalyzeActivity.class);
+                intent.putExtra("enteredIngredients", getIntent().getStringArrayExtra("enteredIngredients"));
                 startActivity(intent);
             }
         });
