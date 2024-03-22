@@ -9,61 +9,49 @@
     <com.example.cleanbite.GaugeView
         android:id="@+id/gaugeView1"
         android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        app:layout_constraintEnd_toStartOf="@+id/gaugeView2"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:layout_height="0dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginBottom="163dp"
+        app:layout_constraintBottom_toTopOf="@+id/editText"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <com.example.cleanbite.GaugeView
-        android:id="@+id/gaugeView2"
-        android:layout_width="150dp"
-        android:layout_height="150dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="144dp"
         android:layout_height="94dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginStart="148dp"
+        android:layout_marginTop="24dp"
         android:text=" Toxicity Prediction"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/gaugeView1" />
 
-    <Button
-        android:id="@+id/button2"
-        android:layout_width="156dp"
-        android:layout_height="101dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        android:text=" Personal Health Prediction"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/gaugeView2" />
-
     <TextView
         android:id="@+id/textView1"
-        android:layout_width="198dp"
-        android:layout_height="331dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="68dp"
+        android:layout_width="0dp"
+        android:layout_height="356dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="11dp"
         android:text="TextView"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/editText"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/button" />
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="200dp"
-        android:layout_height="334dp"
-        android:layout_marginTop="80dp"
-        android:layout_marginEnd="4dp"
-        android:text="TextView"
+    <EditText
+        android:id="@+id/editText"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="7dp"
+        android:layout_marginBottom="174dp"
+        android:ems="10"
+        android:inputType="text"
+        android:text="Name"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button2" />
+        app:layout_constraintStart_toEndOf="@+id/textView1"
+        app:layout_constraintTop_toBottomOf="@+id/gaugeView1" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

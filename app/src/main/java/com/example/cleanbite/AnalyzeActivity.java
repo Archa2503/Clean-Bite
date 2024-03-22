@@ -4,8 +4,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.NetworkResponse;
@@ -15,9 +19,16 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,44 +37,48 @@ public class AnalyzeActivity extends AppCompatActivity {
     private TextView textView;
     private String stringEndPointURL = "https://api.openai.com/v1/chat/completions";
     private String output = "";
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analyze);
         textView = findViewById(R.id.textView1);
-
-
+        db = FirebaseFirestore.getInstance();
 
         GaugeView gaugeView1 = findViewById(R.id.gaugeView1);
-        gaugeView1.setValue(60); // Set the value for the first gauge
-
-        GaugeView gaugeView2 = findViewById(R.id.gaugeView2);
-        gaugeView2.setValue(80); // Set the value for the second gauge
-
-
+        gaugeView1.setValue(60);
 
         Button button = findViewById(R.id.button);
+        final EditText editText = findViewById(R.id.editText); // Assuming your EditText has id editText
+
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Retrieve ingredients from the intent
-                String[] ingredients = getIntent().getStringArrayExtra("enteredIngredients");
-                if (ingredients != null) {
-                    try {
-                        // Call the model method with the retrieved ingredients
-                        model(ingredients);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
+                String userInput = editText.getText().toString().trim();
+                if (!userInput.isEmpty()) {
+                    String[] ingredients = userInput.split(",\\s*");
+                    if (ingredients.length > 0) {
+                        try {
+                            model(ingredients);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        Log.e("AnalyzeActivity", "No ingredients found in the user input.");
+                        // Handle case where no ingredients are found
                     }
                 } else {
-                    Log.e("AnalyzeActivity", "No ingredients found in the intent.");
+                    Log.e("AnalyzeActivity", "User input is empty.");
+                    // Handle case where user input is empty
                 }
             }
         });
     }
 
     public void model(String[] ingredients) throws JSONException {
+        output = "";
+
         JSONObject jsonObject = new JSONObject();
 
         try {
@@ -73,7 +88,6 @@ public class AnalyzeActivity extends AppCompatActivity {
             JSONObject jsonObjectMessage = new JSONObject();
             jsonObjectMessage.put("role", "user");
 
-            // Concatenate the fixed text and the ingredients in the content string
             StringBuilder contentBuilder = new StringBuilder();
             contentBuilder.append("Predict the toxicity of the content from the list and give a rating out of 5:");
             for (String ingredient : ingredients) {
@@ -94,7 +108,6 @@ public class AnalyzeActivity extends AppCompatActivity {
                 stringEndPointURL, jsonObject, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject response) {
-
                 String stringText = null;
                 try {
                     stringText = response.getJSONArray("choices")
@@ -105,13 +118,13 @@ public class AnalyzeActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 }
 
-                output = output + stringText;
+                output = output + stringText + "\n";
                 textView.setText(output);
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-
+                Log.e("AnalyzeActivity", "Error in OpenAI API request", error);
             }
         }) {
             @Override
@@ -129,11 +142,32 @@ public class AnalyzeActivity extends AppCompatActivity {
             }
         };
 
-        int intTimeoutPeriod = 60000; // 60 seconds timeout duration defined
+        int intTimeoutPeriod = 60000;
         RetryPolicy retryPolicy = new DefaultRetryPolicy(intTimeoutPeriod,
                 DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         jsonObjectRequest.setRetryPolicy(retryPolicy);
         Volley.newRequestQueue(getApplicationContext()).add(jsonObjectRequest);
+
+        for (String ingredient : ingredients) {
+            DocumentReference docRef = db.collection("ingredients").document(ingredient);
+            docRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    if (documentSnapshot.exists()) {
+                        String content = documentSnapshot.getString("content");
+                        output += ingredient + ": " + content + "\n";
+                        textView.setText(output);
+                    } else {
+                        Log.d("AnalyzeActivity", "No such document");
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.d("AnalyzeActivity", "Error getting document", e);
+                }
+            });
+        }
     }
 }
