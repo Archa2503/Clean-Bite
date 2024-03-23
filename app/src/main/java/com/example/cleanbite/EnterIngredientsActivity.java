@@ -25,7 +25,6 @@ public class EnterIngredientsActivity extends AppCompatActivity {
         addIngredientButton = findViewById(R.id.addIngredientButton);
         doneButton = findViewById(R.id.doneButton);
 
-
         ingredientsList = new ArrayList<>();
 
         addIngredientButton.setOnClickListener(new View.OnClickListener() {
@@ -35,8 +34,6 @@ public class EnterIngredientsActivity extends AppCompatActivity {
                 if (!ingredient.isEmpty()) {
                     ingredientsList.add(ingredient);
                     ingredientEditText.setText("");
-
-
                 }
             }
         });
@@ -44,11 +41,11 @@ public class EnterIngredientsActivity extends AppCompatActivity {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Start the DisplayIngredientsActivity and pass the list of entered ingredients
                 Intent intent = new Intent(EnterIngredientsActivity.this, DisplayIngredientsActivity.class);
                 intent.putExtra("enteredIngredients", ingredientsList.toArray(new String[0]));
                 startActivity(intent);
             }
         });
-
     }
 }

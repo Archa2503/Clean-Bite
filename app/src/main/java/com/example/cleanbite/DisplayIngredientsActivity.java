@@ -33,7 +33,7 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
             }
         }
 
-
+        // Back button to finish the activity
         Button backButton = findViewById(R.id.backButton);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -42,6 +42,7 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
             }
         });
 
+        // Analyze button to start the AnalyzeActivity
         Button analyzeButton = findViewById(R.id.analyzeButton);
         analyzeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,6 +53,5 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-
     }
 }

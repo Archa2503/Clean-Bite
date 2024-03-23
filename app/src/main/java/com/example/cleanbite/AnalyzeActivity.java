@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -19,10 +18,7 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.json.JSONArray;
@@ -36,7 +32,6 @@ public class AnalyzeActivity extends AppCompatActivity {
     private String apikey = "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";
     private TextView textView;
     private String stringEndPointURL = "https://api.openai.com/v1/chat/completions";
-    private String output = "";
     private FirebaseFirestore db;
 
     @Override
@@ -49,36 +44,33 @@ public class AnalyzeActivity extends AppCompatActivity {
         GaugeView gaugeView1 = findViewById(R.id.gaugeView1);
         gaugeView1.setValue(60);
 
-        Button button = findViewById(R.id.button);
-        final EditText editText = findViewById(R.id.editText); // Assuming your EditText has id editText
+        Button predictButton = findViewById(R.id.button);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        predictButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String userInput = editText.getText().toString().trim();
-                if (!userInput.isEmpty()) {
-                    String[] ingredients = userInput.split(",\\s*");
-                    if (ingredients.length > 0) {
-                        try {
-                            model(ingredients);
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        Log.e("AnalyzeActivity", "No ingredients found in the user input.");
-                        // Handle case where no ingredients are found
+                String[] userInputArray = getIntent().getStringArrayExtra("enteredIngredients");
+                if (userInputArray != null && userInputArray.length > 0) {
+                    StringBuilder userInputBuilder = new StringBuilder();
+                    for (String ingredient : userInputArray) {
+                        userInputBuilder.append(ingredient).append(", ");
+                    }
+                    // Remove the trailing comma and space
+                    String userInput = userInputBuilder.substring(0, userInputBuilder.length() - 2);
+                    try {
+                        predictToxicity(userInput);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
                 } else {
-                    Log.e("AnalyzeActivity", "User input is empty.");
-                    // Handle case where user input is empty
+                    // Handle case where no ingredients are entered
+                    Log.e("AnalyzeActivity", "No ingredients entered.");
                 }
             }
         });
     }
 
-    public void model(String[] ingredients) throws JSONException {
-        output = "";
-
+    private void predictToxicity(String userInput) throws JSONException {
         JSONObject jsonObject = new JSONObject();
 
         try {
@@ -90,9 +82,7 @@ public class AnalyzeActivity extends AppCompatActivity {
 
             StringBuilder contentBuilder = new StringBuilder();
             contentBuilder.append("Predict the toxicity of the content from the list and give a rating out of 5:");
-            for (String ingredient : ingredients) {
-                contentBuilder.append(" - ").append(ingredient);
-            }
+            contentBuilder.append(" - ").append(userInput);  // Add user input to the content
             String content = contentBuilder.toString();
             jsonObjectMessage.put("content", content);
 
@@ -118,8 +108,7 @@ public class AnalyzeActivity extends AppCompatActivity {
                     throw new RuntimeException(e);
                 }
 
-                output = output + stringText + "\n";
-                textView.setText(output);
+                textView.setText(stringText);
             }
         }, new Response.ErrorListener() {
             @Override
@@ -148,26 +137,5 @@ public class AnalyzeActivity extends AppCompatActivity {
                 DefaultRetryPolicy.DEFAULT_BACKOFF_MULT);
         jsonObjectRequest.setRetryPolicy(retryPolicy);
         Volley.newRequestQueue(getApplicationContext()).add(jsonObjectRequest);
-
-        for (String ingredient : ingredients) {
-            DocumentReference docRef = db.collection("ingredients").document(ingredient);
-            docRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                @Override
-                public void onSuccess(DocumentSnapshot documentSnapshot) {
-                    if (documentSnapshot.exists()) {
-                        String content = documentSnapshot.getString("content");
-                        output += ingredient + ": " + content + "\n";
-                        textView.setText(output);
-                    } else {
-                        Log.d("AnalyzeActivity", "No such document");
-                    }
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d("AnalyzeActivity", "Error getting document", e);
-                }
-            });
-        }
     }
 }
