@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -18,11 +17,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -33,9 +30,10 @@ public class HealthDetailsActivity extends AppCompatActivity {
     private EditText ageEditText;
     private EditText emailEditText;
     private TextView emailValidationTextView;
+    private EditText heightEditText;
+    private EditText weightEditText;
     // Firebase
     private FirebaseAuth mAuth;
-    private DatabaseReference mDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,203 +42,86 @@ public class HealthDetailsActivity extends AppCompatActivity {
 
         // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
 
+        // Check if health details exist in the database
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("health_details").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Health details already exist, redirect to another activity
+                        startActivity(new Intent(HealthDetailsActivity.this, Dashboard.class));
+                        finish(); // Finish this activity
+                    } else {
+                        // Health details do not exist, proceed with setting up the activity
+                        setupActivity();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure to fetch health details
+                    Toast.makeText(HealthDetailsActivity.this, "Failed to fetch health details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void setupActivity() {
         // Find and set up EditText fields
         EditText nameEditText = findViewById(R.id.names);
-        emailEditText = findViewById(R.id.email); // Correct initialization
-        dobEditText = findViewById(R.id.DOB); // Correct initialization
-        ageEditText = findViewById(R.id.age); // Correct initialization
-        EditText phoneEditText = findViewById(R.id.Phone);
+        emailEditText = findViewById(R.id.email);
+        emailEditText.setEnabled(false);
+        dobEditText = findViewById(R.id.DOB);
+        dobEditText.setEnabled(false); // Disable editing
+        ageEditText = findViewById(R.id.age);
+        ageEditText.setEnabled(false); // Disable editing
+        heightEditText = findViewById(R.id.height);
+        weightEditText = findViewById(R.id.weight);
 
         // Set up CheckBox and RadioGroup
         android.widget.CheckBox conditionsCheckBox = findViewById(R.id.conditions);
-        android.widget.RadioGroup radioGroup = findViewById(R.id.radioGroup);
 
         // Find email validation TextView
         emailValidationTextView = findViewById(R.id.emailValidationTextView);
+
+        // Fetch user data from Firestore and populate EditText fields
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = mAuth.getCurrentUser().getUid();
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    // Retrieve user data
+                    String userEmail = documentSnapshot.getString("email");
+                    String userDOB = documentSnapshot.getString("dob");
+                    int userAge = documentSnapshot.getLong("age").intValue(); // Assuming "age" is stored as a numeric field
+
+                    // Update EditText fields with user data
+                    emailEditText.setText(userEmail);
+                    dobEditText.setText(userDOB);
+                    ageEditText.setText(String.valueOf(userAge));
+                })
+                .addOnFailureListener(e -> {
+                    // Handle failure to fetch user data
+                    Toast.makeText(HealthDetailsActivity.this, "Failed to fetch user data: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
 
         // Set up click listener for the Date of Birth EditText
         dobEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDatePickerDialog();
+                // Do nothing since the field is disabled
             }
         });
 
         // Set up submit button click listener
         Button submitButton = findViewById(R.id.button);
-        EditText finalAgeEditText = ageEditText;
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Retrieve the email EditText
-                String email = emailEditText.getText().toString();
+                // Retrieve and validate height and weight inputs
+                String heightStr = heightEditText.getText().toString().trim();
+                String weightStr = weightEditText.getText().toString().trim();
 
-                // Validate the email
-                if (!isValidEmail(email)) {
-                    // Email is not valid, show an error message
-                    Toast.makeText(HealthDetailsActivity.this, "Invalid email address", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                // Validate height and weight inputs
 
-                // Retrieve the phone number EditText
-                String phoneNumber = phoneEditText.getText().toString();
-
-                // Validate the phone number using regex
-                if (!isValidPhoneNumber(phoneNumber)) {
-                    // Phone number is not valid, show an error message
-                    Toast.makeText(HealthDetailsActivity.this, "Invalid phone number", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Retrieve the date of birth EditText
-                String dobStr = dobEditText.getText().toString();
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                Date dob = null;
-                try {
-                    dob = sdf.parse(dobStr);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                    return;
-                }
-
-                // Calculate age
-                int age = calculateAge(dob);
-
-                // Set the age in the ageEditText
-                finalAgeEditText.setText(String.valueOf(age));
-
-                // Check if the conditions checkbox is checked
-                if (!conditionsCheckBox.isChecked()) {
-                    // Conditions checkbox is not checked, show an error message
-                    Toast.makeText(HealthDetailsActivity.this, "Please accept the terms and conditions", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Display details in a popup
-                showDetailsPopup(nameEditText.getText().toString(), email, phoneNumber, dobStr, String.valueOf(age));
-
-
-
-                FirebaseUser currentUser = mAuth.getCurrentUser();
-                if (currentUser != null) {
-                    String userId = currentUser.getUid();
-                    String name = ((EditText) findViewById(R.id.names)).getText().toString();
-                    String mail = ((EditText) findViewById(R.id.email)).getText().toString();
-                    String date = ((EditText) findViewById(R.id.DOB)).getText().toString();
-                    String ag = ((EditText) findViewById(R.id.age)).getText().toString();
-                    String phone = ((EditText) findViewById(R.id.Phone)).getText().toString();
-
-                    // Check for null or empty fields
-                    if (name.isEmpty() || mail.isEmpty() || date.isEmpty() || ag.isEmpty() || phone.isEmpty()) {
-                        Toast.makeText(HealthDetailsActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-
-                    // Create a HealthDetails object with the details
-                    HealthDetails healthDetails = new HealthDetails(name, mail, date, ag, phone);
-
-                    // Access Firestore instance
-                    FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-                    // Add a new document with a generated ID under the "health_details" collection
-                    db.collection("health_details").document(userId)
-                            .set(healthDetails)
-                            .addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void aVoid) {
-                                    Toast.makeText(HealthDetailsActivity.this, "Health details added successfully", Toast.LENGTH_SHORT).show();
-                                    // Redirect to a new activity to enter user details
-                                    Intent intent = new Intent(HealthDetailsActivity.this, UserDetailsActivity.class);
-                                    startActivity(intent);
-                                    finish(); // Finish the current activity
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    Toast.makeText(HealthDetailsActivity.this, "Error adding health details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                }
+                // Proceed with saving to Firestore if inputs are valid
             }
         });
     }
-
-    private void showDatePickerDialog() {
-        // Get current date
-        final Calendar c = Calendar.getInstance();
-        int mYear = c.get(Calendar.YEAR);
-        int mMonth = c.get(Calendar.MONTH);
-        int mDay = c.get(Calendar.DAY_OF_MONTH);
-
-        // Create DatePickerDialog and show it
-        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
-                new DatePickerDialog.OnDateSetListener() {
-
-                    @Override
-                    public void onDateSet(DatePicker view, int year,
-                                          int monthOfYear, int dayOfMonth) {
-                        // Display selected date in EditText
-                        if (dobEditText != null) {
-                            dobEditText.setText(dayOfMonth + "/" + (monthOfYear + 1) + "/" + year);
-                        }
-                    }
-                }, mYear, mMonth, mDay);
-        datePickerDialog.show();
-    }
-
-
-    private boolean isValidPhoneNumber(String phoneNumber) {
-        // Regular expression to validate a phone number
-        String phoneRegex = "^(?:\\+?\\d{1,3}[- ]?)?\\(?\\d{3}\\)?[- ]?\\d{3}[- ]?\\d{4}$";
-        return phoneNumber.matches(phoneRegex);
-    }
-
-    private int calculateAge(Date dob) {
-        Calendar dobCal = Calendar.getInstance();
-        dobCal.setTime(dob);
-        Calendar today = Calendar.getInstance();
-        int age = today.get(Calendar.YEAR) - dobCal.get(Calendar.YEAR);
-        if (today.get(Calendar.DAY_OF_YEAR) < dobCal.get(Calendar.DAY_OF_YEAR)) {
-            age--;
-        }
-        return age;
-    }
-
-    private boolean isValidEmail(String email) {
-        // Simple email validation using regex
-        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
-        return email.matches(emailRegex);
-    }
-
-    private void showDetailsPopup(String name, String email, String phone, String dob, String age) {
-        // Create a dialog with custom layout
-        Dialog dialog = new Dialog(HealthDetailsActivity.this);
-        dialog.setContentView(R.layout.popup_layout);
-
-        // Set text views with user details
-        TextView nameTextView = dialog.findViewById(R.id.names);
-        nameTextView.setText("Name: " + name);
-
-        TextView emailTextView = dialog.findViewById(R.id.email);
-        emailTextView.setText("Email: " + email);
-
-        TextView phoneTextView = dialog.findViewById(R.id.Phone);
-        phoneTextView.setText("Phone: " + phone);
-
-        TextView dobTextView = dialog.findViewById(R.id.DOB);
-        dobTextView.setText("Date of Birth: " + dob);
-
-        TextView ageTextView = dialog.findViewById(R.id.age);
-        ageTextView.setText("Age: " + age);
-
-        // Show the dialog
-        dialog.show();
-    }
-
-
 }
-
-

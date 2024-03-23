@@ -55,6 +55,12 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore:24.10.3")
     implementation("com.squareup.okhttp3:okhttp:4.10.0")
     implementation("com.android.volley:volley:1.2.1")
+    implementation ("com.google.firebase:firebase-auth:20.0.4")
+    implementation ("com.google.firebase:firebase-database:20.0.4")
+    implementation ("com.google.firebase:firebase-firestore:24.0.0")
+
+
+
 
 }
 
