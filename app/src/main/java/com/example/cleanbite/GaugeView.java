@@ -1,4 +1,5 @@
 package com.example.cleanbite;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -20,6 +21,7 @@ public class GaugeView extends View {
     private float animationValue;
     private long animationStartTime;
     private boolean isAnimating;
+    private String toxicityLevel;
 
     private Paint arcPaint;
     private Paint needlePaint;
@@ -50,8 +52,9 @@ public class GaugeView extends View {
         arcRect = new RectF();
     }
 
-    public void setValue(int value) {
+    public void setValue(int value, String toxicityLevel) {
         this.value = Math.max(MIN_VALUE, Math.min(value, MAX_VALUE));
+        this.toxicityLevel = toxicityLevel;
         animationValue = 0;
         isAnimating = true;
         animationStartTime = System.currentTimeMillis();
@@ -104,22 +107,43 @@ public class GaugeView extends View {
     }
 
     private void drawArc(Canvas canvas, RectF rect, float value) {
-        int startColor = Color.GREEN;
-        int middleColor = Color.YELLOW;
-        int endColor = Color.RED;
+        int startColor, middleColor, endColor;
+
+        switch (toxicityLevel.toLowerCase()) {
+            case "low":
+                startColor = Color.GREEN;
+                middleColor = Color.GREEN;
+                endColor = Color.GREEN;
+                break;
+            case "medium":
+                startColor = Color.GREEN;
+                middleColor = Color.YELLOW;
+                endColor = Color.YELLOW;
+                break;
+            case "high":
+                startColor = Color.RED;
+                middleColor = Color.RED;
+                endColor = Color.RED;
+                break;
+            default:
+                startColor = Color.GREEN;
+                middleColor = Color.YELLOW;
+                endColor = Color.RED;
+                break;
+        }
 
         Paint paint = new Paint(arcPaint);
         float sweepAngle = ANGLE_SWEEP * value / MAX_VALUE;
 
-        // Draw the green arc
+        // Draw the start color arc
         paint.setColor(startColor);
         canvas.drawArc(rect, ANGLE_START, sweepAngle * 0.5f, false, paint);
 
-        // Draw the yellow arc
+        // Draw the middle color arc
         paint.setColor(middleColor);
         canvas.drawArc(rect, ANGLE_START + sweepAngle * 0.5f, sweepAngle * 0.25f, false, paint);
 
-        // Draw the red arc
+        // Draw the end color arc
         paint.setColor(endColor);
         canvas.drawArc(rect, ANGLE_START + sweepAngle * 0.75f, sweepAngle * 0.25f, false, paint);
     }

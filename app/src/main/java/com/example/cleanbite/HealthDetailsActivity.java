@@ -3,12 +3,10 @@ package com.example.cleanbite;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,23 +14,10 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 
 public class HealthDetailsActivity extends AppCompatActivity {
 
-    private EditText dobEditText;
-    private EditText ageEditText;
-    private EditText emailEditText;
-    private TextView emailValidationTextView;
-    private EditText heightEditText;
-    private EditText weightEditText;
-    // Firebase
     private FirebaseAuth mAuth;
 
     @Override
@@ -40,7 +25,6 @@ public class HealthDetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_health_details);
 
-        // Initialize Firebase
         mAuth = FirebaseAuth.getInstance();
 
         // Check if health details exist in the database
@@ -49,7 +33,7 @@ public class HealthDetailsActivity extends AppCompatActivity {
         db.collection("health_details").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Health details already exist, redirect to another activity
+                        // Health details already exist, redirect to Dashboard
                         startActivity(new Intent(HealthDetailsActivity.this, Dashboard.class));
                         finish(); // Finish this activity
                     } else {
@@ -66,20 +50,20 @@ public class HealthDetailsActivity extends AppCompatActivity {
     private void setupActivity() {
         // Find and set up EditText fields
         EditText nameEditText = findViewById(R.id.names);
-        emailEditText = findViewById(R.id.email);
+        EditText emailEditText = findViewById(R.id.email);
         emailEditText.setEnabled(false);
-        dobEditText = findViewById(R.id.DOB);
+        EditText dobEditText = findViewById(R.id.DOB);
         dobEditText.setEnabled(false); // Disable editing
-        ageEditText = findViewById(R.id.age);
+        EditText ageEditText = findViewById(R.id.age);
         ageEditText.setEnabled(false); // Disable editing
-        heightEditText = findViewById(R.id.height);
-        weightEditText = findViewById(R.id.weight);
+        EditText heightEditText = findViewById(R.id.height);
+        EditText weightEditText = findViewById(R.id.weight);
 
         // Set up CheckBox and RadioGroup
         android.widget.CheckBox conditionsCheckBox = findViewById(R.id.conditions);
 
         // Find email validation TextView
-        emailValidationTextView = findViewById(R.id.emailValidationTextView);
+        TextView emailValidationTextView = findViewById(R.id.emailValidationTextView);
 
         // Fetch user data from Firestore and populate EditText fields
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -119,8 +103,43 @@ public class HealthDetailsActivity extends AppCompatActivity {
                 String weightStr = weightEditText.getText().toString().trim();
 
                 // Validate height and weight inputs
+                if (!heightStr.isEmpty() && !weightStr.isEmpty()) {
+                    // Convert height and weight strings to appropriate data types
+                    double height = Double.parseDouble(heightStr);
+                    double weight = Double.parseDouble(weightStr);
 
-                // Proceed with saving to Firestore if inputs are valid
+                    // Fetch additional data needed for HealthDetails
+                    String name = nameEditText.getText().toString().trim(); // Get name from EditText
+                    String email = emailEditText.getText().toString().trim(); // Get email from EditText
+
+                    // Prepare data to be saved
+                    HealthDetails healthDetails = new HealthDetails(name, email, null, null, height, weight);
+
+                    // Get current user ID
+                    String userId = mAuth.getCurrentUser().getUid();
+
+                    // Save health details to Firestore
+                    FirebaseFirestore db = FirebaseFirestore.getInstance();
+                    db.collection("health_details").document(userId).set(healthDetails)
+                            .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    // Health details saved successfully, navigate to Dashboard
+                                    startActivity(new Intent(HealthDetailsActivity.this, Dashboard.class));
+                                    finish(); // Finish this activity
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // Handle failure to save health details
+                                    Toast.makeText(HealthDetailsActivity.this, "Failed to save health details: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                } else {
+                    // Show error message if height or weight is empty
+                    Toast.makeText(HealthDetailsActivity.this, "Please enter both height and weight.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
