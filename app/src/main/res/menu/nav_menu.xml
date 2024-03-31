@@ -17,10 +17,6 @@
             android:icon="@drawable/baseline_settings_24"
             android:title="Settings"/>
 
-        <item
-            android:id="@+id/nav_file_complaint"
-            android:icon="@drawable/baseline_file_copy_24"
-            android:title="File Complaint"/>
 
         <item
             android:id="@+id/nav_about"
