@@ -66,7 +66,7 @@
 
 
             <EditText
-                android:id="@+id/ToEditText"
+                android:id="@+id/email1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="foodsafetykerala@gmail.com"
@@ -78,7 +78,7 @@
 
         <!-- Subject -->
         <EditText
-            android:id="@+id/subjectEditText"
+            android:id="@+id/subject"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
@@ -89,7 +89,7 @@
 
         <!-- Message -->
         <EditText
-            android:id="@+id/messageEditText"
+            android:id="@+id/message"
             android:layout_width="match_parent"
             android:layout_height="394dp"
             android:layout_weight="1"
@@ -118,7 +118,7 @@
                 android:padding="8dp"/>
 
             <ImageButton
-                android:id="@+id/sendButton"
+                android:id="@+id/btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/baseline_send_24"

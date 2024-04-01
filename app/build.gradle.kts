@@ -58,6 +58,11 @@ dependencies {
     implementation ("com.google.firebase:firebase-auth:20.0.4")
     implementation ("com.google.firebase:firebase-database:20.0.4")
     implementation ("com.google.firebase:firebase-firestore:24.0.0")
+    implementation(files("libs/activation.jar"))
+    implementation(files("libs/additionnal.jar"))
+    implementation(files("libs/mail.jar"))
+    implementation ("com.sun.mail:android-mail:1.6.8")
+    implementation ("com.sun.mail:javax.mail:1.6.2")
 
 
 

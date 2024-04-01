@@ -1,38 +1,48 @@
 package com.example.cleanbite;
 
-import android.os.Bundle;
-import android.view.View;
-import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class FileComplaintActivity extends AppCompatActivity {
+import android.annotation.SuppressLint;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.Toast;
 
+public class FileComplaintActivity extends AppCompatActivity {
+    private EditText email, subject, message;
+    private ImageButton button;
+
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_complaint);
-
-        // Set action bar title
-        getSupportActionBar().setTitle("File Complaint");
-
-        // Attach Button
-        ImageButton attachButton = findViewById(R.id.attachButton);
-        attachButton.setOnClickListener(new View.OnClickListener() {
+        email = findViewById(R.id.email);
+        subject = findViewById(R.id.subject);
+        message = findViewById(R.id.message);
+        button = findViewById(R.id.btn);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                // Add functionality to attach button
-                // For example: Open file picker to select a file to attach
+            public void onClick(View view) {
+                senEmail();
             }
         });
+    }
 
-        // Send Button
-        ImageButton sendButton = findViewById(R.id.sendButton);
-        sendButton.setOnClickListener(new View.OnClickListener() {
+    private void senEmail() {
+        String mEmail = email.getText().toString();
+        String mSubject = subject.getText().toString();
+        String mMessage = message.getText().toString();
+        JavaMailApi javaMailAPI = new JavaMailApi(this, mEmail, mSubject, mMessage) {
             @Override
-            public void onClick(View v) {
-                // Add functionality to send button
-                // For example: Send email to the specified recipient
+            protected void onPostExecute(Void aVoid) {
+                super.onPostExecute(aVoid);
+                // Show a toast message
+                Toast.makeText(FileComplaintActivity.this, "Email sent", Toast.LENGTH_SHORT).show();
             }
-        });
+        };
+        javaMailAPI.execute();
     }
 }
