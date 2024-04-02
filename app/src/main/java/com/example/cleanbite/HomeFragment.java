@@ -26,6 +26,7 @@ public class HomeFragment extends Fragment {
     private TextView greetingTextView;
     private TextView usernameTextView;
     private FloatingActionButton enterIngredientsFab;
+    private FloatingActionButton Complaint;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -40,6 +41,7 @@ public class HomeFragment extends Fragment {
         usernameTextView = view.findViewById(R.id.textView3);
         enterIngredientsFab = view.findViewById(R.id.floatingActionButton2);
         View scanFab = view.findViewById(R.id.floatingActionButton1);
+        Complaint= view.findViewById(R.id.floatingActionButton3);
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -56,6 +58,13 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getActivity(), ScanActivity.class));
+            }
+        });
+
+        Complaint.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), FileComplaintActivity.class));
             }
         });
 

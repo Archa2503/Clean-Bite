@@ -49,7 +49,7 @@ public class AnalyzeActivity extends AppCompatActivity {
 
         GaugeView gaugeView1 = findViewById(R.id.gaugeView1);
         // Set the initial value of the gauge view
-        //gaugeView1.setValue(0,);
+        gaugeView1.setValue(0,"low");
 
         Button predictButton = findViewById(R.id.button);
 

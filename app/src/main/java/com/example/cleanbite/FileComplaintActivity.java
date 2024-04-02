@@ -8,10 +8,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class FileComplaintActivity extends AppCompatActivity {
-    private EditText email, subject, message;
+    private TextView email, subject, message;
     private ImageButton button;
 
     @SuppressLint("MissingInflatedId")
@@ -19,7 +20,7 @@ public class FileComplaintActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_file_complaint);
-        email = findViewById(R.id.email);
+        email = findViewById(R.id.email1);
         subject = findViewById(R.id.subject);
         message = findViewById(R.id.message);
         button = findViewById(R.id.btn);
