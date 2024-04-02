@@ -58,7 +58,11 @@ dependencies {
     implementation ("com.google.firebase:firebase-auth:20.0.4")
     implementation ("com.google.firebase:firebase-database:20.0.4")
     implementation ("com.google.firebase:firebase-firestore:24.0.0")
-
+    implementation(files("libs/activation.jar"))
+    implementation(files("libs/additionnal.jar"))
+    implementation(files("libs/mail.jar"))
+    implementation("com.github.dhaval2404:imagepicker:2.1")
+    implementation("com.google.android.gms:play-services-mlkit-text-recognition:18.0.2")
 
 
 
