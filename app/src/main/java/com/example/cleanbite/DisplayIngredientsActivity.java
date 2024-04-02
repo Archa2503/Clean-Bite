@@ -26,10 +26,22 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
             String[] enteredIngredients = intent.getStringArrayExtra("enteredIngredients");
             if (enteredIngredients != null) {
                 for (String ingredient : enteredIngredients) {
+                    // Add TextView for each entered ingredient
                     TextView textView = new TextView(this);
                     textView.setText(ingredient);
                     ingredientsLayout.addView(textView);
                 }
+            }
+        }
+
+        // Retrieve recognized text from the previous activity
+        if (intent != null && intent.hasExtra("recognizedText")) {
+            String recognizedText = intent.getStringExtra("recognizedText");
+            if (recognizedText != null && !recognizedText.isEmpty()) {
+                // Add TextView for displaying recognized text
+                TextView recognizedTextView = new TextView(this);
+                recognizedTextView.setText(recognizedText);
+                ingredientsLayout.addView(recognizedTextView);
             }
         }
 
