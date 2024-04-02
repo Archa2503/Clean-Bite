@@ -17,11 +17,17 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -29,7 +35,8 @@ import java.util.regex.Pattern;
 
 public class AnalyzeActivity extends AppCompatActivity {
     private String apikey = "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";
-    private TextView textView;
+    private TextView textView,textview2;
+
     private GaugeView gaugeView;
     private String stringEndPointURL = "https://api.openai.com/v1/chat/completions";
 
@@ -38,20 +45,21 @@ public class AnalyzeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analyze);
         textView = findViewById(R.id.textView1);
+
         gaugeView = findViewById(R.id.gaugeView);
+
 
         Button predictButton = findViewById(R.id.button);
 
         predictButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Retrieve entered ingredients from intent
                 String[] enteredIngredients = getIntent().getStringArrayExtra("enteredIngredients");
                 if (enteredIngredients != null && enteredIngredients.length > 0) {
-                    // Join ingredients into a single string
                     String userInput = String.join(", ", enteredIngredients);
                     try {
                         predictToxicity(userInput);
+                        compareIngredientsWithFirestore(userInput); // Call the method to compare with Firestore
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
@@ -80,10 +88,7 @@ public class AnalyzeActivity extends AppCompatActivity {
                     "suggestion of usage :" +
                     "toxicity of overall product:");
 
-
-
-
-            contentBuilder.append(" - ").append(userInput);  // Add user input to the content
+            contentBuilder.append(" - ").append(userInput);
             String content = contentBuilder.toString();
             jsonObjectMessage.put("content", content);
 
@@ -111,11 +116,9 @@ public class AnalyzeActivity extends AppCompatActivity {
 
                 textView.setText(stringText);
 
-                // Extract toxicity level and numerical value from the response
                 String toxicityLevel = extractToxicityLevelFromResponse(stringText);
                 float numericValue = extractNumericValueFromResponse(stringText);
 
-                // Set the value and toxicity level on the GaugeView
                 gaugeView.setValue(numericValue);
             }
         }, new Response.ErrorListener() {
@@ -148,25 +151,66 @@ public class AnalyzeActivity extends AppCompatActivity {
     }
 
     private String extractToxicityLevelFromResponse(String response) {
-        // Implement your logic to extract the toxicity level from the response string
-        // For example, you could look for a pattern like "toxicity level: high" or similar
-        // and return the corresponding toxicity level string
-        return "high"; // Replace with your actual implementation
+        return "high";
     }
 
     private float extractNumericValueFromResponse(String response) {
-        // Implement your logic to extract the numerical value from the response string
-        // For example, you could use regular expressions to find patterns like "numerical value: 4.2"
-        // and extract the numeric value as a float
-        // Here's a simple example using regular expressions:
-
-        String pattern = "numerical value: (\\d+(\\.\\d+)?)";
+        String pattern = "Toxicity\\slevel:\\s(\\d+)";
         Pattern regex = Pattern.compile(pattern);
         Matcher matcher = regex.matcher(response);
 
         if (matcher.find()) {
-            return Float.parseFloat(matcher.group(1)); // Return the matched numeric value as a float
+            return Float.parseFloat(matcher.group(1));
         } else {
-            return 0.0f; // Return a default value if no match is found
+            return 0.0f;
         }
-}}
+    }
+
+
+
+
+    private void compareIngredientsWithFirestore(String userInput) {
+        TextView textView2 = findViewById(R.id.textView2);
+        Log.d("AnalyzeActivity", "User input: " + userInput);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Split the user input into individual ingredients and normalize them
+        String[] userIngredients = userInput.split(",\\s*");
+        for (int i = 0; i < userIngredients.length; i++) {
+            userIngredients[i] = userIngredients[i].trim().toLowerCase(); // Normalize the ingredient
+        }
+
+        db.collection("ingredients")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            StringBuilder resultBuilder = new StringBuilder();
+                            for (DocumentSnapshot document : task.getResult()) {
+                                // Retrieve specific fields from the document
+                                String name = document.getString("name");
+                                String explanation = document.getString("explanation");
+                                String toxicityLevel = document.getString("toxicityLevel");
+
+                                // Append the retrieved fields to the result string
+                                if (name != null && explanation != null && toxicityLevel != null) {
+                                    resultBuilder.append("Name: ").append(name).append("\n");
+                                    resultBuilder.append("Explanation: ").append(explanation).append("\n");
+                                    resultBuilder.append("Toxicity Level: ").append(toxicityLevel).append("\n");
+                                    resultBuilder.append("\n");
+                                }
+                            }
+                            String result = resultBuilder.toString();
+                            // Set the result text to the TextView
+                            textView2.setText(result);
+                        } else {
+                            Log.d("AnalyzeActivity", "Error getting documents: ", task.getException());
+                        }
+                    }
+                });
+    }
+
+
+
+}
