@@ -10,18 +10,17 @@ import android.view.View;
 
 public class GaugeView extends View {
 
-    private static final int MAX_VALUE = 100;
+    private static final int MAX_VALUE = 5;
     private static final int MIN_VALUE = 0;
     private static final int ANGLE_START = 135;
-    private static final int ANGLE_SWEEP = 270;
-    private static final int ANIMATION_DURATION = 3000; // 3 seconds
+    private static final int ANGLE_SWEEP = 180;
+    private static final int ANIMATION_DURATION = 1000; // 1 second
     private static final int ANIMATION_CYCLES = 3;
 
-    private int value;
+    private float value;
     private float animationValue;
     private long animationStartTime;
     private boolean isAnimating;
-    private String toxicityLevel;
 
     private Paint arcPaint;
     private Paint needlePaint;
@@ -50,14 +49,14 @@ public class GaugeView extends View {
         textPaint.setAntiAlias(true);
 
         arcRect = new RectF();
-    }
 
-    public void setValue(int value, String toxicityLevel) {
-        this.value = Math.max(MIN_VALUE, Math.min(value, MAX_VALUE));
-        this.toxicityLevel = toxicityLevel;
         animationValue = 0;
         isAnimating = true;
         animationStartTime = System.currentTimeMillis();
+    }
+
+    public void setValue(float value) {
+        this.value = Math.max(MIN_VALUE, Math.min(value, MAX_VALUE));
         invalidate();
     }
 
@@ -79,26 +78,26 @@ public class GaugeView extends View {
             long elapsedTime = System.currentTimeMillis() - animationStartTime;
             float progress = Math.min(elapsedTime / (float) ANIMATION_DURATION, 1f);
             float cycle = (progress * ANIMATION_CYCLES) % ANIMATION_CYCLES;
-            animationValue = cycle < 2 ? MAX_VALUE * (cycle < 1 ? progress : 2 - progress) : 0;
+            animationValue = cycle < 2 ? ANGLE_SWEEP * (cycle < 1 ? progress : 2 - progress) : 0;
             if (progress >= 1f) {
                 isAnimating = false;
-                animationValue = value;
+                animationValue = value * ANGLE_SWEEP / MAX_VALUE;
             }
         } else {
-            animationValue = value;
+            animationValue = value * ANGLE_SWEEP / MAX_VALUE;
         }
 
         // Draw the arc
         drawArc(canvas, arcRect, animationValue);
 
         // Draw the needle
-        float needleAngle = ANGLE_START + (ANGLE_SWEEP * animationValue / MAX_VALUE);
+        float needleAngle = ANGLE_START + animationValue;
         float needleX = width / 2 + (width / 3) * (float) Math.cos(Math.toRadians(needleAngle));
         float needleY = height / 2 + (height / 3) * (float) Math.sin(Math.toRadians(needleAngle));
         canvas.drawLine(width / 2, height / 2, needleX, needleY, needlePaint);
 
         // Draw the value text
-        String valueText = String.valueOf((int) animationValue);
+        String valueText = String.format("%.1f", value);
         canvas.drawText(valueText, width / 2, height / 2 + textPaint.getTextSize() / 2, textPaint);
 
         if (isAnimating) {
@@ -107,44 +106,28 @@ public class GaugeView extends View {
     }
 
     private void drawArc(Canvas canvas, RectF rect, float value) {
-        int startColor, middleColor, endColor;
+        int startColor, endColor;
 
-        switch (toxicityLevel.toLowerCase()) {
-            case "low":
-                startColor = Color.GREEN;
-                middleColor = Color.GREEN;
-                endColor = Color.GREEN;
-                break;
-            case "medium":
-                startColor = Color.GREEN;
-                middleColor = Color.YELLOW;
-                endColor = Color.YELLOW;
-                break;
-            case "high":
-                startColor = Color.RED;
-                middleColor = Color.RED;
-                endColor = Color.RED;
-                break;
-            default:
-                startColor = Color.GREEN;
-                middleColor = Color.YELLOW;
-                endColor = Color.RED;
-                break;
+        if (value <= 2 * ANGLE_SWEEP / MAX_VALUE) {
+            startColor = Color.GREEN;
+            endColor = Color.GREEN;
+        } else if (value <= 3.5 * ANGLE_SWEEP / MAX_VALUE) {
+            startColor = Color.GREEN;
+            endColor = Color.YELLOW;
+        } else {
+            startColor = Color.RED;
+            endColor = Color.RED;
         }
 
         Paint paint = new Paint(arcPaint);
-        float sweepAngle = ANGLE_SWEEP * value / MAX_VALUE;
+        float sweepAngle = value;
 
         // Draw the start color arc
         paint.setColor(startColor);
         canvas.drawArc(rect, ANGLE_START, sweepAngle * 0.5f, false, paint);
 
-        // Draw the middle color arc
-        paint.setColor(middleColor);
-        canvas.drawArc(rect, ANGLE_START + sweepAngle * 0.5f, sweepAngle * 0.25f, false, paint);
-
         // Draw the end color arc
         paint.setColor(endColor);
-        canvas.drawArc(rect, ANGLE_START + sweepAngle * 0.75f, sweepAngle * 0.25f, false, paint);
+        canvas.drawArc(rect, ANGLE_START + sweepAngle * 0.5f, sweepAngle * 0.5f, false, paint);
     }
 }
