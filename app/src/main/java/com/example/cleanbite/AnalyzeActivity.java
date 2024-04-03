@@ -5,6 +5,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import java.util.concurrent.CountDownLatch;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import androidx.annotation.NonNull;
+
+
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -75,7 +82,7 @@ public class AnalyzeActivity extends AppCompatActivity {
 
         try {
             jsonObject.put("model", "gpt-3.5-turbo");
-
+            jsonObject.put("temperature", 0.1); // Example temperature value
             JSONArray jsonArrayMessage = new JSONArray();
             JSONObject jsonObjectMessage = new JSONObject();
             jsonObjectMessage.put("role", "user");
@@ -155,61 +162,93 @@ public class AnalyzeActivity extends AppCompatActivity {
     }
 
     private float extractNumericValueFromResponse(String response) {
-        String pattern = "Toxicity\\slevel:\\s(\\d+)";
-        Pattern regex = Pattern.compile(pattern);
-        Matcher matcher = regex.matcher(response);
+        // Define the patterns
+        String pattern1 = "Toxicity\\slevel:\\s(\\d+)";
+        String pattern2 = "Toxicity\\sof\\soverall\\sproduct:\\s(\\d+)";
 
-        if (matcher.find()) {
-            return Float.parseFloat(matcher.group(1));
+        // Compile the patterns
+        Pattern regex1 = Pattern.compile(pattern1);
+        Pattern regex2 = Pattern.compile(pattern2);
+
+        // Match the patterns against the response
+        Matcher matcher1 = regex1.matcher(response);
+        Matcher matcher2 = regex2.matcher(response);
+
+        // Check if either pattern matches
+        if (matcher1.find()) {
+            return Float.parseFloat(matcher1.group(1));
+        } else if (matcher2.find()) {
+            return Float.parseFloat(matcher2.group(1));
         } else {
-            return 0.0f;
+            return 0.0f; // Return a default value if no match is found
         }
     }
+
 
 
 
 
     private void compareIngredientsWithFirestore(String userInput) {
-        TextView textView2 = findViewById(R.id.textView2);
-        Log.d("AnalyzeActivity", "User input: " + userInput);
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        // Split the user input into individual ingredients and normalize them
-        String[] userIngredients = userInput.split(",\\s*");
-        for (int i = 0; i < userIngredients.length; i++) {
-            userIngredients[i] = userIngredients[i].trim().toLowerCase(); // Normalize the ingredient
-        }
-
-        db.collection("ingredients")
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            StringBuilder resultBuilder = new StringBuilder();
-                            for (DocumentSnapshot document : task.getResult()) {
-                                // Retrieve specific fields from the document
-                                String name = document.getString("name");
-                                String explanation = document.getString("explanation");
-                                String toxicityLevel = document.getString("toxicityLevel");
-
-                                // Append the retrieved fields to the result string
-                                if (name != null && explanation != null && toxicityLevel != null) {
-                                    resultBuilder.append("Name: ").append(name).append("\n");
-                                    resultBuilder.append("Explanation: ").append(explanation).append("\n");
-                                    resultBuilder.append("Toxicity Level: ").append(toxicityLevel).append("\n");
-                                    resultBuilder.append("\n");
-                                }
-                            }
-                            String result = resultBuilder.toString();
-                            // Set the result text to the TextView
-                            textView2.setText(result);
-                        } else {
-                            Log.d("AnalyzeActivity", "Error getting documents: ", task.getException());
-                        }
-                    }
-                });
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        // Split the user input into individual ingredients and normalize them
+//        String[] userIngredients = userInput.split(",\\s*");
+//        for (int i = 0; i < userIngredients.length; i++) {
+//            userIngredients[i] = userIngredients[i].trim().toLowerCase(); // Normalize the ingredient
+//        }
+//
+//        // Use a CountDownLatch to wait for all queries to complete
+//        CountDownLatch latch = new CountDownLatch(userIngredients.length);
+//
+//        // Build the Firestore query to filter documents based on user input
+//        for (String ingredient : userIngredients) {
+//            db.collection("ingredients")
+//                    .whereEqualTo("name", ingredient)
+//                    .get()
+//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+//                            if (task.isSuccessful()) {
+//                                StringBuilder resultBuilder = new StringBuilder();
+//                                for (DocumentSnapshot document : task.getResult()) {
+//                                    // Retrieve specific fields from the document
+//                                    String name = document.getString("name");
+//                                    String explanation = document.getString("explanation");
+//                                    String toxicityLevel = document.getString("toxicityLevel");
+//
+//                                    // Append the retrieved fields to the result string
+//                                    if (name != null && explanation != null && toxicityLevel != null) {
+//                                        resultBuilder.append("Name: ").append(name).append("\n");
+//                                        resultBuilder.append("Explanation: ").append(explanation).append("\n");
+//                                        resultBuilder.append("Toxicity Level: ").append(toxicityLevel).append("\n");
+//                                        resultBuilder.append("\n");
+//                                    }
+//                                }
+//                                String result = resultBuilder.toString();
+//
+//                                // Append the result to textView2 instead of setting it directly
+//                                TextView textView2 = findViewById(R.id.textView2);
+//                                textView2.append(result);
+//
+//                                // Decrease the latch count
+//                                latch.countDown();
+//                            } else {
+//                                Log.d("AnalyzeActivity", "Error getting documents: ", task.getException());
+//                            }
+//                        }
+//                    });
+//        }
+//
+//        // Wait for all queries to complete before continuing
+//        try {
+//            latch.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
     }
+
+
+
 
 
 

@@ -2,6 +2,7 @@ package com.example.cleanbite;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -83,9 +84,16 @@ public class ScanActivity extends AppCompatActivity {
                 // Retrieve text from EditText
                 String recognizedText = recgText.getText().toString();
 
-                // Pass the recognized text to DisplayIngredientsActivity
+                // Log the recognized text
+                Log.d("ScanActivity", "Recognized text: " + recognizedText);
+
+                // Split the recognized text into an array of ingredients
+                String[] enteredIngredients = recognizedText.split(",\\s*");
+
+                // Pass the entered ingredients to DisplayIngredientsActivity
                 Intent intent = new Intent(ScanActivity.this, DisplayIngredientsActivity.class);
-                intent.putExtra("recognizedText", recognizedText);
+                intent.putExtra("enteredIngredients", enteredIngredients);
+
                 startActivity(intent);
             }
         });
