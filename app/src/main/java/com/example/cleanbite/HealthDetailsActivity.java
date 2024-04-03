@@ -34,7 +34,7 @@ public class HealthDetailsActivity extends AppCompatActivity {
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         // Health details already exist, redirect to Dashboard
-                        startActivity(new Intent(HealthDetailsActivity.this, Dashboard.class));
+                        startActivity(new Intent(HealthDetailsActivity.this, DiseaseDetailsActivity.class));
                         finish(); // Finish this activity
                     } else {
                         // Health details do not exist, proceed with setting up the activity
@@ -125,7 +125,7 @@ public class HealthDetailsActivity extends AppCompatActivity {
                                 @Override
                                 public void onSuccess(Void aVoid) {
                                     // Health details saved successfully, navigate to Dashboard
-                                    startActivity(new Intent(HealthDetailsActivity.this, Dashboard.class));
+                                    startActivity(new Intent(HealthDetailsActivity.this, DiseaseDetailsActivity.class));
                                     finish(); // Finish this activity
                                 }
                             })

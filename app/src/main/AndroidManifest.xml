@@ -22,6 +22,9 @@
         android:theme="@style/Theme.CleanBite"
         tools:targetApi="31">
         <activity
+            android:name=".DiseaseDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".AddDataActivity"
             android:exported="false" />
         <activity
