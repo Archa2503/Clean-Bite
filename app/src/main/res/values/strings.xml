@@ -7,16 +7,16 @@
     <string name="client_id">730429862139-f4o7hh8oa5n21tm31ed81bcf08h0kkrr.apps.googleusercontent.com</string>
 
     <string name="title">My Profile</string>
-        <string-array name="blood_groups">
-            <item>A+</item>
-            <item>A-</item>
-            <item>B+</item>
-            <item>B-</item>
-            <item>AB+</item>
-            <item>AB-</item>
-            <item>O+</item>
-            <item>O-</item>
-        </string-array>
+    <string-array name="blood_groups">
+        <item>A+</item>
+        <item>A-</item>
+        <item>B+</item>
+        <item>B-</item>
+        <item>AB+</item>
+        <item>AB-</item>
+        <item>O+</item>
+        <item>O-</item>
+    </string-array>
 
 
 </resources>
