@@ -33,6 +33,10 @@
         <activity
             android:name=".HealthDetailsActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ScanHistoryActivity"
+            android:exported="false"/>
         <!--
 <activity
             android:name=".HealthDetailsActivity"

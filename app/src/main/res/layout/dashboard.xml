@@ -39,7 +39,9 @@
         app:headerLayout="@layout/nav_header"
         app:menu="@menu/nav_menu"
         app:itemIconTint="@color/lavender"
-        app:itemTextColor="@color/lavender"/>
+        app:itemTextColor="@color/lavender"
+        android:clickable="true"
+        android:focusable="true"/>
 
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout

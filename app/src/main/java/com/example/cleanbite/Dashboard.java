@@ -1,6 +1,5 @@
 package com.example.cleanbite;
 
-
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
@@ -8,13 +7,16 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView; // Import TextView
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -33,14 +35,88 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.ListenerRegistration;
 
 public class Dashboard extends AppCompatActivity {
 
     FloatingActionButton fab;
     DrawerLayout drawerLayout;
     BottomNavigationView bottomNavigationView;
-    public static int nav_home = 1000026;
+
+    private MenuItem previousMenuItem = null;
+    private MenuItem selectedMenuItem;
+
+
+    private static final int MENU_HOME = R.id.nav_home;
+    private static final int MENU_SETTINGS = R.id.nav_settings;
+    private static final int MENU_ABOUT = R.id.nav_about;
+    private static final int MENU_LOGOUT = R.id.nav_logout;
+
+    private void closeDrawer() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START);
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // Consume the touch event to prevent the drawer from automatically closing
+        return true;
+    }
+
+    private void showBottomDialog() {
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.bottomsheetlayout);
+
+        LinearLayout videoLayout = dialog.findViewById(R.id.layoutVideo);
+        LinearLayout shortsLayout = dialog.findViewById(R.id.layoutShorts);
+        ImageView cancelButton = dialog.findViewById(R.id.cancelButton);
+
+        videoLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Dashboard.this , ScanActivity.class));
+                dialog.dismiss();
+            }
+        });
+
+        shortsLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(Dashboard.this , EnterIngredientsActivity.class));
+                dialog.dismiss();
+            }
+        });
+
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+        dialog.getWindow().setGravity(Gravity.BOTTOM);
+    }
+
+
+
+
+    private void replaceFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frame_layout, fragment);
+        fragmentTransaction.commit();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.nav_menu, menu);
+        return true;
+    }
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -53,6 +129,7 @@ public class Dashboard extends AppCompatActivity {
         drawerLayout = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
         Toolbar toolbar = findViewById(R.id.toolbar);
+
 
         setSupportActionBar(toolbar);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.open_nav, R.string.close_nav);
@@ -103,77 +180,73 @@ public class Dashboard extends AppCompatActivity {
             }
         });
 
+
+
         // Handle clicks on navigation drawer menu items
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @SuppressLint("NonConstantResourceId")
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//                switch (item.getItemId()) {
-//                    case R.id.nav_home:
-//                        replaceFragment(new HomeFragment());
-//                        break;
-//                    case R.id.nav_file_complaint:
-//                        startActivity(new Intent(Dashboard.this, FileComplaintActivity.class));
-//                        break;
-//                }
-                drawerLayout.closeDrawer(GravityCompat.START);
+                // Handle the selected item
+                int itemId = item.getItemId();
+                if (itemId == MENU_HOME) {
+                    // Replace the fragment with the HomeFragment
+                    replaceFragment(new HomeFragment());
+                } else if (itemId == MENU_SETTINGS) {
+                    // Handle Settings item click
+                } else if (itemId == MENU_ABOUT) {
+                    // Handle About Us item click
+                } else if (itemId == MENU_LOGOUT) {
+                    // Handle Logout item click
+                    logout();// Perform logout action
+
+                    item.setChecked(true); // Set checked state
+                    item.setEnabled(false);
+                    return true; // Return true to prevent further actions
+                }
+
+                // Deselect the previously selected item
+                if (previousMenuItem != null) {
+                    previousMenuItem.setChecked(false);
+                }
+
+                // Highlight the selected item
+                item.setChecked(true);
+
+                // Set the current item as the previous item for the next selection
+                previousMenuItem = item;
+
+                // Close the drawer after handling the item click
+                if (itemId != MENU_LOGOUT) {
+                    closeDrawer();
+                }
+
                 return true;
             }
         });
+
+
     }
 
-    private  void replaceFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.frame_layout, fragment);
-        fragmentTransaction.commit();
+    // Method to logout the user
+    private void logout() {
+        FirebaseAuth.getInstance().signOut();
+        // Navigate back to the login activity
+        startActivity(new Intent(Dashboard.this, MainActivity.class));
+        finish(); // Close the current activity
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show();
     }
 
-
-    private void showBottomDialog() {
-
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(R.layout.bottomsheetlayout);
-
-        LinearLayout videoLayout = dialog.findViewById(R.id.layoutVideo);
-        LinearLayout shortsLayout = dialog.findViewById(R.id.layoutShorts);
-        ImageView cancelButton = dialog.findViewById(R.id.cancelButton);
-
-        videoLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Dashboard.this , ScanActivity.class));
-
-                dialog.dismiss();
-            }
-        });
-
-        shortsLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(Dashboard.this , EnterIngredientsActivity.class));
-
-                dialog.dismiss();
-
-
-            }
-        });
-
-
-
-
-        cancelButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dialog.dismiss();
-            }
-        });
-
-        dialog.show();
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT);
-        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
-        dialog.getWindow().setGravity(Gravity.BOTTOM);
-
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            // Handle clicks on the app bar/toolbar menu items
+            case android.R.id.home:
+                // Open/close the drawer if the home button (hamburger icon) is clicked
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

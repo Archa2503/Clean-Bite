@@ -16,10 +16,12 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 public class DisplayIngredientsActivity extends AppCompatActivity {
 
@@ -103,15 +105,15 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
         if (currentUser != null) {
             String userId = currentUser.getUid();
 
+            // Get the current timestamp
+            Map<String, Object> data = new HashMap<>();
+            data.put("userId", userId);
+            data.put("ingredients", Arrays.asList(enteredIngredients));
+            data.put("timestamp", FieldValue.serverTimestamp());
+
             // Create a new document in the "scanHistory" collection with a unique ID
             db.collection("scanHistory")
-                    .add(new HashMap<String, Object>() {
-                        {
-                            put("userId", userId);
-                            put("ingredients", Arrays.asList(enteredIngredients));
-                            // Add any other fields you want to store
-                        }
-                    })
+                    .add(data)
                     .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                         @Override
                         public void onSuccess(DocumentReference documentReference) {
@@ -128,4 +130,5 @@ public class DisplayIngredientsActivity extends AppCompatActivity {
             Log.e("AnalyzeActivity", "User not authenticated");
         }
     }
+
 }
