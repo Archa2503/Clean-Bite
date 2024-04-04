@@ -14,11 +14,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class DiseaseDetailsActivity extends AppCompatActivity {
 
     private LinearLayout healthDetailsContainer;
+    private String currentUserId; // To store the current user's UID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +30,10 @@ public class DiseaseDetailsActivity extends AppCompatActivity {
         healthDetailsContainer = findViewById(R.id.healthDetailsContainer);
         Button addHealthDetailsButton = findViewById(R.id.addHealthDetailsButton);
         Button nextButton = findViewById(R.id.nextButton);
+
+        // Obtain the current user's UID
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        currentUserId = mAuth.getCurrentUser().getUid();
 
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -75,7 +81,7 @@ public class DiseaseDetailsActivity extends AppCompatActivity {
                 // Create a new document in Firestore's "diseasedetails" collection
                 FirebaseFirestore db = FirebaseFirestore.getInstance();
                 db.collection("diseasedetails").document()
-                        .set(new DiseaseDetailsModel(diseaseName, duration, sideEffects))
+                        .set(new DiseaseDetailsModel(diseaseName, duration, sideEffects, currentUserId)) // Include currentUserId
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {

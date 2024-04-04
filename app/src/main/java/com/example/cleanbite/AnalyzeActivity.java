@@ -1,19 +1,14 @@
+// AnalyzeActivity.java
+
 package com.example.cleanbite;
 
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import java.util.concurrent.CountDownLatch;
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
-import androidx.annotation.NonNull;
-
-
-
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.DefaultRetryPolicy;
@@ -24,26 +19,29 @@ import com.android.volley.RetryPolicy;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class AnalyzeActivity extends AppCompatActivity {
     private String apikey = "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";
-    private TextView textView,textview2;
-
+    private TextView textView, textview2;
     private GaugeView gaugeView;
     private String stringEndPointURL = "https://api.openai.com/v1/chat/completions";
 
@@ -52,27 +50,33 @@ public class AnalyzeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_analyze);
         textView = findViewById(R.id.textView1);
-
         gaugeView = findViewById(R.id.gaugeView);
-
-
         Button predictButton = findViewById(R.id.button);
+        Button healthAssessmentButton = findViewById(R.id.healthAssessmentButton);
 
         predictButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String[] enteredIngredients = getIntent().getStringArrayExtra("enteredIngredients");
                 if (enteredIngredients != null && enteredIngredients.length > 0) {
+                    Log.d("AnalyzeActivity", "Ingredients: " + Arrays.toString(enteredIngredients));
                     String userInput = String.join(", ", enteredIngredients);
                     try {
                         predictToxicity(userInput);
-                        compareIngredientsWithFirestore(userInput); // Call the method to compare with Firestore
+                        compareIngredientsWithFirestore(userInput);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
                 } else {
                     Log.e("AnalyzeActivity", "No ingredients entered.");
                 }
+            }
+        });
+
+        healthAssessmentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fetchDiseaseDetails();
             }
         });
     }
@@ -184,72 +188,100 @@ public class AnalyzeActivity extends AppCompatActivity {
         }
     }
 
-
-
-
-
     private void compareIngredientsWithFirestore(String userInput) {
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//
-//        // Split the user input into individual ingredients and normalize them
-//        String[] userIngredients = userInput.split(",\\s*");
-//        for (int i = 0; i < userIngredients.length; i++) {
-//            userIngredients[i] = userIngredients[i].trim().toLowerCase(); // Normalize the ingredient
-//        }
-//
-//        // Use a CountDownLatch to wait for all queries to complete
-//        CountDownLatch latch = new CountDownLatch(userIngredients.length);
-//
-//        // Build the Firestore query to filter documents based on user input
-//        for (String ingredient : userIngredients) {
-//            db.collection("ingredients")
-//                    .whereEqualTo("name", ingredient)
-//                    .get()
-//                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-//                        @Override
-//                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
-//                            if (task.isSuccessful()) {
-//                                StringBuilder resultBuilder = new StringBuilder();
-//                                for (DocumentSnapshot document : task.getResult()) {
-//                                    // Retrieve specific fields from the document
-//                                    String name = document.getString("name");
-//                                    String explanation = document.getString("explanation");
-//                                    String toxicityLevel = document.getString("toxicityLevel");
-//
-//                                    // Append the retrieved fields to the result string
-//                                    if (name != null && explanation != null && toxicityLevel != null) {
-//                                        resultBuilder.append("Name: ").append(name).append("\n");
-//                                        resultBuilder.append("Explanation: ").append(explanation).append("\n");
-//                                        resultBuilder.append("Toxicity Level: ").append(toxicityLevel).append("\n");
-//                                        resultBuilder.append("\n");
-//                                    }
-//                                }
-//                                String result = resultBuilder.toString();
-//
-//                                // Append the result to textView2 instead of setting it directly
-//                                TextView textView2 = findViewById(R.id.textView2);
-//                                textView2.append(result);
-//
-//                                // Decrease the latch count
-//                                latch.countDown();
-//                            } else {
-//                                Log.d("AnalyzeActivity", "Error getting documents: ", task.getException());
-//                            }
-//                        }
-//                    });
-//        }
-//
-//        // Wait for all queries to complete before continuing
-//        try {
-//            latch.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
+        String[] userIngredients = userInput.split(",\\s*");
+        for (int i = 0; i < userIngredients.length; i++) {
+            userIngredients[i] = userIngredients[i].trim().toLowerCase(); // Normalize the ingredient
+        }
+
+        TextView textView2 = findViewById(R.id.textView2);
+        new FetchIngredientsTask(textView2).execute(userIngredients);
     }
 
+    private class FetchIngredientsTask extends AsyncTask<String[], Void, List<String>> {
+        private TextView textView2;
 
+        FetchIngredientsTask(TextView textView2) {
+            this.textView2 = textView2;
+        }
 
+        @Override
+        protected List<String> doInBackground(String[]... params) {
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+            String[] userIngredients = params[0];
+            List<String> results = new ArrayList<>();
 
+            for (String ingredient : userIngredients) {
+                Task<DocumentSnapshot> task = db.collection("ingredients")
+                        .document(ingredient)
+                        .get();
 
+                try {
+                    DocumentSnapshot document = Tasks.await(task);
+                    if (document.exists()) {
+                        String name = document.getString("name");
+                        String explanation = document.getString("explanation");
+                        String toxicityLevel = document.getString("toxicityLevel");
 
+                        StringBuilder resultBuilder = new StringBuilder();
+                        resultBuilder.append("Name: ").append(name).append("\n");
+                        resultBuilder.append("Explanation: ").append(explanation).append("\n");
+                        resultBuilder.append("Toxicity Level: ").append(toxicityLevel).append("\n");
+                        resultBuilder.append("\n");
+
+                        results.add(resultBuilder.toString());
+                    } else {
+                        results.add("Error: Ingredient '" + ingredient + "' not found in the database.\n\n");
+                    }
+                } catch (ExecutionException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return results;
+        }
+
+        @Override
+        protected void onPostExecute(List<String> results) {
+            for (String result : results) {
+                textView2.append(result);
+            }
+        }
+    }
+
+    private void fetchDiseaseDetails() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Task<DocumentSnapshot> diseaseDetailsTask = db.collection("diseasedetails")
+                .document("documentId")
+                .get();
+
+        diseaseDetailsTask.addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                if (documentSnapshot.exists()) {
+                    String diseaseName = documentSnapshot.getString("diseaseName");
+                    launchHealthAssessmentActivity(diseaseName);
+                } else {
+                    Log.e("AnalyzeActivity", "Disease details document does not exist");
+                }
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("AnalyzeActivity", "Error fetching disease details", e);
+            }
+        });
+    }
+
+    private void launchHealthAssessmentActivity(String diseaseName) {
+        String[] enteredIngredients = getIntent().getStringArrayExtra("enteredIngredients");
+        if (enteredIngredients != null && enteredIngredients.length > 0) {
+            Intent intent = new Intent(AnalyzeActivity.this, HealthAssessmentActivity.class);
+            intent.putExtra("enteredIngredients", enteredIngredients);
+            intent.putExtra("diseaseName", diseaseName);
+            startActivity(intent);
+        } else {
+            Log.e("AnalyzeActivity", "No ingredients entered.");
+        }
+    }
 }

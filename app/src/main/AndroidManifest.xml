@@ -22,6 +22,9 @@
         android:theme="@style/Theme.CleanBite"
         tools:targetApi="31">
         <activity
+            android:name=".HealthAssessmentActivity"
+            android:exported="false" />
+        <activity
             android:name=".DiseaseDetailsActivity"
             android:exported="false" />
         <activity
@@ -36,10 +39,9 @@
         <activity
             android:name=".HealthDetailsActivity"
             android:exported="false" />
-
         <activity
             android:name=".ScanHistoryActivity"
-            android:exported="false"/>
+            android:exported="false" />
         <!--
 <activity
             android:name=".HealthDetailsActivity"

@@ -2,9 +2,10 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".AnalyzeActivity">
+    tools:context=".HealthAssessmentActivity">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView4"
@@ -33,18 +34,17 @@
         android:id="@+id/button"
         android:layout_width="161dp"
         android:layout_height="53dp"
-        android:text=" Toxicity Prediction"
+        android:text="Health Assessment"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.112"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.98" />
+        app:layout_constraintVertical_bias="0.976" />
 
     <ScrollView
         android:id="@+id/scrollView2"
-        android:layout_width="207dp"
-        android:layout_height="492dp"
+        android:layout_width="200dp"
+        android:layout_height="344dp"
         android:layout_marginStart="9dp"
         android:layout_marginTop="70dp"
         android:layout_marginBottom="19dp"
@@ -61,13 +61,13 @@
             android:layout_height="wrap_content"
             android:background="@drawable/border"
             android:padding="8dp"
-            android:text="Toxicity Prediction" />
+            android:text="Health Assessment Result" />
     </ScrollView>
 
     <ScrollView
         android:id="@+id/scrollView3"
-        android:layout_width="203dp"
-        android:layout_height="490dp"
+        android:layout_width="200dp"
+        android:layout_height="343dp"
         android:layout_marginTop="70dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -80,17 +80,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/border"
             android:padding="8dp"
-            android:text="Database Comparison" />
+            android:text="Ingredient Details" />
     </ScrollView>
-
-    <Button
-        android:id="@+id/healthAssessmentButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="Health Assessment"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

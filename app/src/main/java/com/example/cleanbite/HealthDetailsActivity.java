@@ -1,19 +1,22 @@
 package com.example.cleanbite;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.google.firebase.auth.FirebaseAuth;
+
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class HealthDetailsActivity extends AppCompatActivity {
@@ -33,7 +36,7 @@ public class HealthDetailsActivity extends AppCompatActivity {
         db.collection("health_details").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Health details already exist, redirect to Dashboard
+                        // Health details exist, proceed to DiseaseDetailsActivity
                         startActivity(new Intent(HealthDetailsActivity.this, DiseaseDetailsActivity.class));
                         finish(); // Finish this activity
                     } else {
@@ -124,7 +127,7 @@ public class HealthDetailsActivity extends AppCompatActivity {
                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                 @Override
                                 public void onSuccess(Void aVoid) {
-                                    // Health details saved successfully, navigate to Dashboard
+                                    // Health details saved successfully, navigate to DiseaseDetailsActivity
                                     startActivity(new Intent(HealthDetailsActivity.this, DiseaseDetailsActivity.class));
                                     finish(); // Finish this activity
                                 }

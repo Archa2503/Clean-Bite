@@ -63,6 +63,8 @@ dependencies {
     implementation(files("libs/mail.jar"))
     implementation("com.github.dhaval2404:imagepicker:2.1")
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:18.0.2")
+    implementation ("com.google.firebase:firebase-firestore:23.0.3")
+
 
 
 

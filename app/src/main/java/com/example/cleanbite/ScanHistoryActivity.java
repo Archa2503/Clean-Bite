@@ -1,10 +1,16 @@
+// ScanHistoryActivity.java
+
 package com.example.cleanbite;
 
+
+
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -21,7 +27,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -87,11 +93,13 @@ public class ScanHistoryActivity extends AppCompatActivity {
     private static class ScanHistoryViewHolder extends RecyclerView.ViewHolder {
         TextView timestampTextView;
         RecyclerView ingredientsRecyclerView;
+        Button analyzeButton;
 
         ScanHistoryViewHolder(View itemView) {
             super(itemView);
             timestampTextView = itemView.findViewById(R.id.timestampTextView);
             ingredientsRecyclerView = itemView.findViewById(R.id.ingredientsRecyclerView);
+            analyzeButton = itemView.findViewById(R.id.analyzeButton);
         }
     }
 
@@ -114,11 +122,28 @@ public class ScanHistoryActivity extends AppCompatActivity {
             ScanHistoryItem item = scanHistoryList.get(position);
             Timestamp timestamp = item.getTimestamp();
             Date date = timestamp.toDate();
-            String formattedDate = DateFormat.getDateTimeInstance().format(date);
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String formattedDate = dateFormat.format(date);
             holder.timestampTextView.setText(formattedDate);
 
             holder.ingredientsRecyclerView.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext()));
             holder.ingredientsRecyclerView.setAdapter(new IngredientsAdapter(item.getIngredients()));
+
+            // Set click listener for the analyze button
+            holder.analyzeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int position = holder.getAdapterPosition();
+                    if (position != RecyclerView.NO_POSITION) {
+                        // Pass the ingredients list to AnalyzeActivity
+                        Intent intent = new Intent(v.getContext(), AnalyzeActivity.class);
+                        ScanHistoryItem item = scanHistoryList.get(position);
+                        List<String> ingredients = item.getIngredients();
+                        intent.putStringArrayListExtra("enteredIngredients", new ArrayList<>(ingredients));
+                        v.getContext().startActivity(intent);
+                    }
+                }
+            });
         }
 
         @Override
@@ -180,3 +205,4 @@ public class ScanHistoryActivity extends AppCompatActivity {
         }
     }
 }
+
